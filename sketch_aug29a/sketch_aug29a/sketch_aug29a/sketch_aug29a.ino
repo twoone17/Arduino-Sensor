@@ -9,9 +9,6 @@ BLEStringCharacteristic xSensorAngle("741c12b9-e13c-4992-8a5e-fce46dec0bff", BLE
 BLEStringCharacteristic ySensorAngle("baad41b2-f12e-4322-9ba6-22cd9ce09832", BLERead | BLENotify,15);
 BLEByteCharacteristic flag("1a4a954a-494c-11ed-b878-0242ac120002", BLERead | BLEWrite);
 
-const int RED = 22;
-const int GREEN = 23;
-const int BLUE = 24;
 byte value;
 int loopFrequency = 0;
 const long displayPeriod = 10;
@@ -28,12 +25,6 @@ void setup() {
   imu.begin();
   BLE.begin();
 
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
-  digitalWrite(RED, HIGH);
-  digitalWrite(GREEN, HIGH);
-  digitalWrite(BLUE, HIGH);
   //  Positive magnetic declination - Korea
   imu.setDeclination(-8.5);
   imu.setFusionAlgorithm(SensorFusion::FUSION);
@@ -67,18 +58,16 @@ void setup() {
   sensorService.addCharacteristic(flag);
   BLE.addService(sensorService);
 
-
   BLE.advertise();
   
   Serial.println("Bluetooth device active, waiting for connections...");
-
 
   
 }
 
 void loop() {
-  
 
+  
   BLEDevice central = BLE.central();
 
   if (central) {
@@ -136,19 +125,14 @@ void loop() {
     else{
       
     xSensorAngle.writeValue(String(caliX));
-    ySensorAngle.writeValue(String(angles.pitch));
+    ySensorAngle.writeValue(String(caliY));
     
     if(value == 1){ //목 측정
-    digitalWrite(RED, LOW);
-    digitalWrite(GREEN, HIGH);
-    digitalWrite(BLUE, HIGH);
-
-  
      if((caliX >= 40)|(angles.pitch >= 30)|(angles.pitch <= -30)){
        if(now - past >= 7000){
           analogWrite(vib, 255);
        }
-     }else if(((caliX > 15)&&(caliX < 40))|((angles.pitch > 15)&&(angles.pitch < 30))|((angles.pitch < -15)&&(angles.pitch > -30))){
+     }else if(((caliX > 15)&&(caliX < 40))|((caliY> 15)&&(caliY < 30))|((caliY < -15)&&(caliY > -30))){
       if(now - past >= 7000){
           analogWrite(vib, 200);
        }
@@ -159,14 +143,11 @@ void loop() {
      }
     }
     else{ //허리 측정
-  digitalWrite(RED, HIGH);
-  digitalWrite(GREEN, LOW);
-  digitalWrite(BLUE, HIGH);
          if((caliX <= -40)|(angles.pitch >= 30)|(angles.pitch <= -30)){
        if(now - past >= 7000){
           analogWrite(vib, 255);
        }
-     }else if(((caliX < -15)&&(caliX > -40))|((angles.pitch > 15)&&(angles.pitch < 30))|((angles.pitch < -15)&&(angles.pitch > -30))){
+     }else if(((caliX < -15)&&(caliX > -40))|((caliY > 15)&&(caliY < 30))|((caliY < -15)&&(caliY > -30))){
       if(now - past >= 7000){
           analogWrite(vib, 200);
        }
@@ -176,7 +157,6 @@ void loop() {
       past = now;
      }
     }
-
 
     loopFrequency = 0;
     previousMillis = millis();
